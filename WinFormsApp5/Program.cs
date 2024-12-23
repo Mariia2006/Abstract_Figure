@@ -23,10 +23,10 @@ namespace WinFormsApp5
         {
             for (int i = 0; i < steps; i++)
             {
-                DrawBlack(g); // ìàëþºìî ô³ãóðó
-                Thread.Sleep(100); // î÷³êóºìî
-                HideDrawingBackGround(g); // ïðèõîâóºìî ô³ãóðó
-                CenterX += stepSize; // çì³ùóºìî êîîðäèíàòó X
+                DrawBlack(g); // Ã¬Ã Ã«Ã¾ÂºÃ¬Ã® Ã´Â³Ã£Ã³Ã°Ã³
+                Thread.Sleep(100); // Ã®Ã·Â³ÃªÃ³ÂºÃ¬Ã®
+                HideDrawingBackGround(g); // Ã¯Ã°Ã¨ÃµÃ®Ã¢Ã³ÂºÃ¬Ã® Ã´Â³Ã£Ã³Ã°Ã³
+                CenterX += stepSize; // Ã§Ã¬Â³Ã¹Ã³ÂºÃ¬Ã® ÃªÃ®Ã®Ã°Ã¤Ã¨Ã­Ã Ã²Ã³ X
             }
         }
     }
@@ -123,37 +123,50 @@ namespace WinFormsApp5
     }
     class TestForm : Form
     {
-        private Circle circle;
-        private Square square;
-        private Rhomb rhomb;
+        private Button circleButton;
+        private Button rhombButton;
+        private Button squareButton;
+        private Button exitButton;
+        private Figure currentFigure;
+        private Graphics graphics;
 
         public TestForm()
         {
-            Text = "Figure Test";
-            Size = new Size(800, 600);
+            Text = "Figure Animation";
+            Width = 800;
+            Height = 600;
             BackColor = Color.White;
 
-            circle = new Circle(100, 100, 50);
-            square = new Square(300, 100, 80);
-            rhomb = new Rhomb(500, 100, 100, 60);
+            circleButton = new Button { Text = "Circle", Location = new Point(10, 10), Size = new Size(100, 40) };
+            rhombButton = new Button { Text = "Rhomb", Location = new Point(120, 10), Size = new Size(100, 40) };
+            squareButton = new Button { Text = "Square", Location = new Point(230, 10), Size = new Size(100, 40) };
+            exitButton = new Button { Text = "Exit", Location = new Point(340, 10), Size = new Size(100, 40) };
 
-            Paint += TestForm_Paint;
+            circleButton.Click += (s, e) => StartFigure(new Circle(100, Height / 2, 50));
+            rhombButton.Click += (s, e) => StartFigure(new Rhomb(100, Height / 2, 100, 60));
+            squareButton.Click += (s, e) => StartFigure(new Square(100, Height / 2, 80));
+            exitButton.Click += (s, e) => Close();
+
+            Controls.Add(circleButton);
+            Controls.Add(rhombButton);
+            Controls.Add(squareButton);
+            Controls.Add(exitButton);
+
+            graphics = CreateGraphics();
         }
 
-        private void TestForm_Paint(object sender, PaintEventArgs e)
+        private void StartFigure(Figure newFigure)
         {
-            // òåñò ìàëþâàííÿ
-            circle.DrawBlack(e.Graphics);
-            square.DrawBlack(e.Graphics);
-            rhomb.DrawBlack(e.Graphics);
-            // òåñò ðóõó âïðàâî
-            new Thread(() =>
+            if (currentFigure != null)
             {
-                circle.MoveRight(CreateGraphics(), 10, 10);
-                square.MoveRight(CreateGraphics(), 10, 10);
-                rhomb.MoveRight(CreateGraphics(), 10, 10);
-                Invalidate(); // îíîâëåííÿ ôîðìè
-            }).Start();
+                currentFigure.HideDrawingBackGround(graphics);
+            }
+
+            currentFigure = newFigure;
+
+            Thread thread = new Thread(() => currentFigure.MoveRight(graphics, 50, 10));
+            thread.IsBackground = true;
+            thread.Start();
         }
     }
     internal static class Program
